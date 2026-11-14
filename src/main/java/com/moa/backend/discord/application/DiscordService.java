@@ -1,7 +1,9 @@
 package com.moa.backend.discord.application;
 
 import com.moa.backend.discord.application.port.in.SendDiscordMessageUseCase;
+import com.moa.backend.discord.application.port.in.VerifyDiscordWebhookUseCase;
 import com.moa.backend.discord.application.port.out.DiscordMessagePort;
+import com.moa.backend.discord.application.port.out.DiscordWebhookLookupPort;
 import com.moa.backend.discord.domain.DiscordMessage;
 import com.moa.backend.discord.domain.DiscordSendResult;
 import com.moa.backend.discord.domain.DiscordWebhook;
@@ -10,15 +12,22 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DiscordService implements SendDiscordMessageUseCase {
+public class DiscordService implements SendDiscordMessageUseCase, VerifyDiscordWebhookUseCase {
 
     /** 한 번의 요청으로 보낼 수 있는 최대 메시지 수. 채널 도배와 rate limit을 막는다. */
     static final int MAX_MESSAGES_PER_SEND = 10;
 
     private final DiscordMessagePort discordMessagePort;
+    private final DiscordWebhookLookupPort discordWebhookLookupPort;
 
-    public DiscordService(DiscordMessagePort discordMessagePort) {
+    public DiscordService(DiscordMessagePort discordMessagePort, DiscordWebhookLookupPort discordWebhookLookupPort) {
         this.discordMessagePort = discordMessagePort;
+        this.discordWebhookLookupPort = discordWebhookLookupPort;
+    }
+
+    @Override
+    public boolean exists(DiscordWebhook webhook) {
+        return discordWebhookLookupPort.exists(webhook);
     }
 
     @Override
