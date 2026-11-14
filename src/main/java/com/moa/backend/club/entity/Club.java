@@ -42,4 +42,12 @@ public class Club extends BaseTimeEntity {
 		this.inviteCode = inviteCode;
 		this.discordWebhookUrl = discordWebhookUrl;
 	}
+
+	public void connectDiscordWebhook(String discordWebhookUrl) {
+		this.discordWebhookUrl = discordWebhookUrl;
+	}
+
+	public boolean isDiscordConnected() {
+		return discordWebhookUrl != null && !discordWebhookUrl.isBlank();
+	}
 }

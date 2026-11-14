@@ -13,10 +13,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Entity
@@ -63,6 +66,21 @@ public class Event extends BaseTimeEntity {
 	@Column(name = "last_synced_at")
 	private LocalDateTime lastSyncedAt;
 
+	/** 공지 본문. 신청 링크 자리는 {@code [구글폼 링크]}로 남겨 두고 조회할 때 바꾼다. */
+	@Column(name = "notice_text", columnDefinition = "TEXT")
+	private String noticeText;
+
+	/** 신청받을 때 추가로 물어볼 질문 (예: 뒤풀이 참석 여부). */
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "extra_questions", columnDefinition = "json")
+	private List<String> extraQuestions;
+
+	@Column(name = "form_url", length = 500)
+	private String formUrl;
+
+	@Column(name = "notice_sent_at")
+	private LocalDateTime noticeSentAt;
+
 	@Builder
 	private Event(
 		Club club,
@@ -74,7 +92,10 @@ public class Event extends BaseTimeEntity {
 		int minCapacity,
 		LocalDateTime applyDeadline,
 		String shareCode,
-		LocalDateTime lastSyncedAt
+		LocalDateTime lastSyncedAt,
+		String noticeText,
+		List<String> extraQuestions,
+		String formUrl
 	) {
 		this.club = club;
 		this.title = title;
@@ -86,5 +107,20 @@ public class Event extends BaseTimeEntity {
 		this.applyDeadline = applyDeadline;
 		this.shareCode = shareCode;
 		this.lastSyncedAt = lastSyncedAt;
+		this.noticeText = noticeText;
+		this.extraQuestions = extraQuestions;
+		this.formUrl = formUrl;
+	}
+
+	public void updateNotice(String noticeText) {
+		this.noticeText = noticeText;
+	}
+
+	public void connectForm(String formUrl) {
+		this.formUrl = formUrl;
+	}
+
+	public void markNoticeSent(LocalDateTime sentAt) {
+		this.noticeSentAt = sentAt;
 	}
 }
