@@ -106,7 +106,7 @@ class ApplicationReviewTest {
 	}
 
 	@Test
-	void 필터는_저장된_상태와_확인_필요_여부로_거른다() {
+	void 확정_대기_필터는_표시_배지_기준이라_중복_누락_행을_뺀다() {
 		List<Application> applications = List.of(
 				application(1, "김모아", "1", "010-1", CONFIRMED, 0),
 				application(2, "이모아", "2", null, CONFIRMED, 10),
@@ -116,8 +116,8 @@ class ApplicationReviewTest {
 		ApplicationReview review = ApplicationReview.of(applications);
 
 		assertThat(ids(review.filter(ApplicationFilter.ALL))).containsExactly(1L, 2L, 3L, 4L, 5L);
-		assertThat(ids(review.filter(ApplicationFilter.CONFIRMED))).containsExactly(1L, 2L);
-		assertThat(ids(review.filter(ApplicationFilter.WAITING))).containsExactly(3L, 4L);
+		assertThat(ids(review.filter(ApplicationFilter.CONFIRMED))).containsExactly(1L);
+		assertThat(ids(review.filter(ApplicationFilter.WAITING))).containsExactly(3L);
 		assertThat(ids(review.filter(ApplicationFilter.NEEDS_CHECK))).containsExactly(2L, 4L);
 	}
 
