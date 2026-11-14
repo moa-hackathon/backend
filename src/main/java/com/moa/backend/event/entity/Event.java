@@ -13,10 +13,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Entity
@@ -62,6 +65,11 @@ public class Event extends BaseTimeEntity {
 
 	@Column(name = "last_synced_at")
 	private LocalDateTime lastSyncedAt;
+
+	/** 구글폼 문항(고정 컬럼 외 CSV 헤더)의 원래 순서. MySQL JSON 객체는 키 순서를 보존하지 않아 배열로 따로 둔다. */
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "form_questions", columnDefinition = "json")
+	private List<String> formQuestions;
 
 	@Builder
 	private Event(
