@@ -60,7 +60,7 @@ class EventQueryServiceTest {
 				LocalDateTime.of(2026, 11, 24, 23, 59));
 		Event hackathon = event(13L, "해커톤 OT", LocalDateTime.of(2026, 11, 20, 19, 0), 50, 20,
 				LocalDateTime.of(2026, 11, 18, 23, 59));
-		given(eventRepository.findAllByClubIdAndEventAtAfterOrderByEventAtAscIdAsc(1L, NOW))
+		given(eventRepository.findAllByClubIdAndEventAtGreaterThanEqualOrderByEventAtAscIdAsc(1L, NOW.toLocalDate().atStartOfDay()))
 				.willReturn(List.of(networking, study, welcome, hackathon));
 		given(applicationRepository.countByEventIdsExcludingStatus(List.of(10L, 11L, 12L, 13L),
 				ApplicationStatus.CANCELED))
@@ -101,7 +101,7 @@ class EventQueryServiceTest {
 	@Test
 	void 신청이_없는_행사는_0명으로_계산한다() {
 		Event empty = event(20L, "빈 행사", NOW.plusDays(3), 40, 20, NOW.plusDays(2));
-		given(eventRepository.findAllByClubIdAndEventAtAfterOrderByEventAtAscIdAsc(1L, NOW))
+		given(eventRepository.findAllByClubIdAndEventAtGreaterThanEqualOrderByEventAtAscIdAsc(1L, NOW.toLocalDate().atStartOfDay()))
 				.willReturn(List.of(empty));
 		given(applicationRepository.countByEventIdsExcludingStatus(List.of(20L), ApplicationStatus.CANCELED))
 				.willReturn(List.of());
@@ -116,7 +116,7 @@ class EventQueryServiceTest {
 
 	@Test
 	void 진행_중인_행사가_없으면_신청_인원을_조회하지_않는다() {
-		given(eventRepository.findAllByClubIdAndEventAtAfterOrderByEventAtAscIdAsc(1L, NOW))
+		given(eventRepository.findAllByClubIdAndEventAtGreaterThanEqualOrderByEventAtAscIdAsc(1L, NOW.toLocalDate().atStartOfDay()))
 				.willReturn(List.of());
 
 		EventListResponse response = eventQueryService.getOngoingEvents(club, NOW);
@@ -129,7 +129,7 @@ class EventQueryServiceTest {
 	@Test
 	void 신청_마감이_지난_행사는_마감_여부와_음수_디데이를_내려준다() {
 		Event closed = event(30L, "마감 지난 행사", NOW.plusDays(5), 30, 10, NOW.minusDays(1));
-		given(eventRepository.findAllByClubIdAndEventAtAfterOrderByEventAtAscIdAsc(1L, NOW))
+		given(eventRepository.findAllByClubIdAndEventAtGreaterThanEqualOrderByEventAtAscIdAsc(1L, NOW.toLocalDate().atStartOfDay()))
 				.willReturn(List.of(closed));
 		given(applicationRepository.countByEventIdsExcludingStatus(List.of(30L), ApplicationStatus.CANCELED))
 				.willReturn(List.of(new EventApplicantCount(30L, 12)));

@@ -25,9 +25,9 @@ public class EventQueryService {
 	private final EventRepository eventRepository;
 	private final ApplicationRepository applicationRepository;
 
-	/** 동아리의 진행 중인 행사(행사 일시가 {@code now}보다 뒤)를 행사 일시 오름차순 카드 목록으로 돌려준다. */
+	/** 동아리의 진행 중인 행사(행사 당일 자정까지 포함)를 행사 일시 오름차순 카드 목록으로 돌려준다. */
 	public EventListResponse getOngoingEvents(Club club, LocalDateTime now) {
-		List<Event> events = eventRepository.findAllByClubIdAndEventAtAfterOrderByEventAtAscIdAsc(club.getId(), now);
+		List<Event> events = eventRepository.findAllByClubIdAndEventAtGreaterThanEqualOrderByEventAtAscIdAsc(club.getId(), now.toLocalDate().atStartOfDay());
 		Map<Long, Long> applicantCounts = countApplicants(events);
 
 		List<EventCardResponse> cards = events.stream()
