@@ -29,13 +29,17 @@ public class Club extends BaseTimeEntity {
 	@Column(name = "description", nullable = true, length = 500)
 	private String description;
 
-	@Column(name = "admin_code", nullable = false, length = 64, unique = true)
-	private String adminCode;
+	@Column(name = "invite_code", nullable = false, length = 64, unique = true)
+	private String inviteCode;
+
+	@Column(name = "discord_webhook_url", nullable = true, length = 255)
+	private String discordWebhookUrl;
 
 	@Builder
-	private Club(String name, String description, String adminCode) {
+	private Club(String name, String description, String inviteCode, String discordWebhookUrl) {
 		this.name = name;
 		this.description = description;
-		this.adminCode = adminCode;
+		this.inviteCode = inviteCode;
+		this.discordWebhookUrl = discordWebhookUrl;
 	}
 }
