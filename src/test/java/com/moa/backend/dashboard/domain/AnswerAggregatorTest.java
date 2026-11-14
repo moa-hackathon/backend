@@ -42,7 +42,9 @@ class AnswerAggregatorTest {
 		Map<String, String> answers = new LinkedHashMap<>();
 		answers.put("첫 참여", "예");
 		answers.put(AFTER_PARTY, "참석");
-		List<Application> applications = List.of(application(1, "a", "1", "c", CONFIRMED, 0, answers));
+		List<Application> applications = List.of(
+				application(1, "a", "1", "c", CONFIRMED, 0, answers),
+				application(2, "b", "2", "c", CONFIRMED, 1, answers));
 
 		List<AnswerStat> stats = AnswerAggregator.aggregate(
 				ApplicationReview.of(applications, List.of(AFTER_PARTY, "첫 참여")));
@@ -54,7 +56,9 @@ class AnswerAggregatorTest {
 	void 인원이_같으면_먼저_나온_값이_앞선다() {
 		List<Application> applications = List.of(
 				application(1, "a", "1", "c", CONFIRMED, 0, Map.of("학년", "3학년")),
-				application(2, "b", "2", "c", CONFIRMED, 1, Map.of("학년", "1학년")));
+				application(2, "b", "2", "c", CONFIRMED, 1, Map.of("학년", "1학년")),
+				application(3, "c", "3", "c", CONFIRMED, 2, Map.of("학년", "1학년")),
+				application(4, "d", "4", "c", CONFIRMED, 3, Map.of("학년", "3학년")));
 
 		assertThat(AnswerAggregator.aggregate(ApplicationReview.of(applications)).get(0).options())
 				.extracting(AnswerStat.Option::value).containsExactly("3학년", "1학년");
@@ -78,11 +82,30 @@ class AnswerAggregatorTest {
 	@Test
 	void 값_종류가_상한과_같으면_집계한다() {
 		List<Application> applications = new ArrayList<>();
-		for (int i = 0; i < AnswerAggregator.MAX_DISTINCT_VALUES; i++) {
-			applications.add(application(i + 1, "n", String.valueOf(i), "c", CONFIRMED, i, Map.of("학과", "학과" + i)));
+		for (int i = 0; i < AnswerAggregator.MAX_DISTINCT_VALUES * 2; i++) {
+			applications.add(application(i + 1, "n", String.valueOf(i), "c", CONFIRMED, i,
+					Map.of("학과", "학과" + (i % AnswerAggregator.MAX_DISTINCT_VALUES))));
 		}
 
 		assertThat(AnswerAggregator.aggregate(ApplicationReview.of(applications))).hasSize(1);
+	}
+
+	@Test
+	void 두_명_이상이_고른_값이_없는_문항은_서술형으로_보고_뺀다() {
+		Map<String, String> first = new LinkedHashMap<>();
+		first.put(AFTER_PARTY, "참석");
+		first.put("하고 싶은 말", "기대돼요");
+		Map<String, String> second = new LinkedHashMap<>();
+		second.put(AFTER_PARTY, "참석");
+		second.put("하고 싶은 말", "잘 부탁드려요");
+		List<Application> applications = List.of(
+				application(1, "a", "1", "c", CONFIRMED, 0, first),
+				application(2, "b", "2", "c", CONFIRMED, 1, second),
+				application(3, "c", "3", "c", CONFIRMED, 2, Map.of(AFTER_PARTY, "불참")));
+
+		List<AnswerStat> stats = AnswerAggregator.aggregate(ApplicationReview.of(applications));
+
+		assertThat(stats).extracting(AnswerStat::question).containsExactly(AFTER_PARTY);
 	}
 
 	@Test

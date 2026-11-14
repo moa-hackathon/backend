@@ -153,7 +153,8 @@ class DashboardServiceTest {
 		answers.put("뒤풀이", "참석");
 		given(eventRepository.findByIdAndClubId(EVENT_ID, CLUB_ID)).willReturn(Optional.of(event));
 		given(applicationRepository.findAllByEventIdOrderByAppliedAtAscIdAsc(EVENT_ID)).willReturn(List.of(
-				application(1, "김모아", "20230015", "010-1", CONFIRMED, 0, answers)));
+				application(1, "김모아", "20230015", "010-1", CONFIRMED, 0, answers),
+				application(2, "이모아", "20240001", "010-2", CONFIRMED, 10, answers)));
 
 		ApplicationListResponse list = dashboardService.getApplications(club, EVENT_ID, ApplicationFilter.ALL);
 		DashboardResponse dashboard = dashboardService.getDashboard(club, EVENT_ID, NOW);
