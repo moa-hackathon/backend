@@ -52,10 +52,12 @@ public class Application extends BaseTimeEntity {
 	private String contact;
 
 	@Enumerated(EnumType.STRING)
+	@JdbcTypeCode(SqlTypes.VARCHAR)
 	@Column(name = "status", nullable = false, length = 20)
 	private ApplicationStatus status;
 
 	@Enumerated(EnumType.STRING)
+	@JdbcTypeCode(SqlTypes.VARCHAR)
 	@Column(name = "source", nullable = false, length = 10)
 	private ApplicationSource source;
 
