@@ -38,6 +38,19 @@ class AnswerAggregatorTest {
 	}
 
 	@Test
+	void 문항은_저장된_폼_문항_순서대로_집계한다() {
+		Map<String, String> answers = new LinkedHashMap<>();
+		answers.put("첫 참여", "예");
+		answers.put(AFTER_PARTY, "참석");
+		List<Application> applications = List.of(application(1, "a", "1", "c", CONFIRMED, 0, answers));
+
+		List<AnswerStat> stats = AnswerAggregator.aggregate(
+				ApplicationReview.of(applications, List.of(AFTER_PARTY, "첫 참여")));
+
+		assertThat(stats).extracting(AnswerStat::question).containsExactly(AFTER_PARTY, "첫 참여");
+	}
+
+	@Test
 	void 인원이_같으면_먼저_나온_값이_앞선다() {
 		List<Application> applications = List.of(
 				application(1, "a", "1", "c", CONFIRMED, 0, Map.of("학년", "3학년")),

@@ -24,6 +24,7 @@ import com.moa.backend.event.domain.EventProgressStatus;
 import com.moa.backend.event.entity.Event;
 import com.moa.backend.event.repository.EventRepository;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -141,6 +142,24 @@ class DashboardServiceTest {
 		assertThat(needsCheck.filter()).isEqualTo(ApplicationFilter.NEEDS_CHECK);
 		assertThat(needsCheck.totalCount()).isEqualTo(2);
 		assertThat(needsCheck.applications()).extracting(ApplicationRowResponse::id).containsExactly(2L, 4L);
+	}
+
+	@Test
+	void 행사에_저장된_폼_문항_순서로_목록의_answers와_집계를_정렬한다() {
+		ReflectionTestUtils.setField(event, "formQuestions", List.of("뒤풀이", "첫 참여"));
+		Map<String, String> answers = new LinkedHashMap<>();
+		answers.put("메모", "m");
+		answers.put("첫 참여", "예");
+		answers.put("뒤풀이", "참석");
+		given(eventRepository.findByIdAndClubId(EVENT_ID, CLUB_ID)).willReturn(Optional.of(event));
+		given(applicationRepository.findAllByEventIdOrderByAppliedAtAscIdAsc(EVENT_ID)).willReturn(List.of(
+				application(1, "김모아", "20230015", "010-1", CONFIRMED, 0, answers)));
+
+		ApplicationListResponse list = dashboardService.getApplications(club, EVENT_ID, ApplicationFilter.ALL);
+		DashboardResponse dashboard = dashboardService.getDashboard(club, EVENT_ID, NOW);
+
+		assertThat(list.applications().get(0).answers().keySet()).containsExactly("뒤풀이", "첫 참여", "메모");
+		assertThat(dashboard.answerStats()).extracting(stat -> stat.question()).containsExactly("뒤풀이", "첫 참여", "메모");
 	}
 
 	@Test

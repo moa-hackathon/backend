@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +28,22 @@ public final class ApplicationReview {
 			.thenComparing(Application::getId, Comparator.nullsLast(Comparator.naturalOrder()));
 
 	private final List<ReviewedApplication> rows;
+	private final List<String> questions;
 
-	private ApplicationReview(List<ReviewedApplication> rows) {
+	private ApplicationReview(List<ReviewedApplication> rows, List<String> questions) {
 		this.rows = rows;
+		this.questions = questions;
 	}
 
+	/** 저장된 폼 문항 순서 없이 판정한다. 문항은 answers에 처음 나온 순서를 따른다. */
 	public static ApplicationReview of(List<Application> applications) {
+		return of(applications, null);
+	}
+
+	/**
+	 * @param formQuestions 행사에 저장된 구글폼 문항 순서({@code event.formQuestions}), 없으면 null
+	 */
+	public static ApplicationReview of(List<Application> applications, List<String> formQuestions) {
 		List<Application> sorted = applications.stream().sorted(APPLIED_ORDER).toList();
 		Set<String> seenStudentIds = new HashSet<>();
 		List<ReviewedApplication> rows = new ArrayList<>(sorted.size());
@@ -51,7 +62,30 @@ public final class ApplicationReview {
 			}
 			rows.add(ReviewedApplication.of(application, duplicate, missingFields));
 		}
-		return new ApplicationReview(List.copyOf(rows));
+		List<ReviewedApplication> reviewed = List.copyOf(rows);
+		return new ApplicationReview(reviewed, orderQuestions(reviewed, formQuestions));
+	}
+
+	/**
+	 * 문항 순서: 저장된 폼 문항을 그 순서대로 먼저 두고, 거기에 없지만 answers에 실제로 있는 문항을
+	 * 신청 순으로 처음 나온 순서대로 뒤에 붙인다. 엑셀 열, 응답 집계, 목록의 answers가 모두 이 순서를 쓴다.
+	 */
+	private static List<String> orderQuestions(List<ReviewedApplication> rows, List<String> formQuestions) {
+		Set<String> questions = new LinkedHashSet<>();
+		if (formQuestions != null) {
+			for (String question : formQuestions) {
+				if (question != null) {
+					questions.add(question);
+				}
+			}
+		}
+		for (ReviewedApplication row : rows) {
+			Map<String, String> answers = row.application().getAnswers();
+			if (answers != null) {
+				questions.addAll(answers.keySet());
+			}
+		}
+		return List.copyOf(questions);
 	}
 
 	static String normalizeStudentId(String studentId) {
@@ -104,15 +138,23 @@ public final class ApplicationReview {
 		return counts;
 	}
 
-	/** {@code answers}에 나온 문항의 합집합. 신청 순으로 처음 등장한 순서를 유지한다. */
+	/** 문항 순서. 저장된 폼 문항 먼저, 그 뒤에 answers에만 있는 문항. */
 	public List<String> questions() {
-		Set<String> questions = new LinkedHashSet<>();
-		for (ReviewedApplication row : rows) {
-			Map<String, String> answers = row.application().getAnswers();
-			if (answers != null) {
-				questions.addAll(answers.keySet());
+		return questions;
+	}
+
+	/** 한 행의 answers를 {@link #questions()} 순서로 다시 담는다. 응답이 없는 문항 키는 넣지 않는다. */
+	public Map<String, String> orderedAnswers(Application application) {
+		Map<String, String> answers = application.getAnswers();
+		Map<String, String> ordered = new LinkedHashMap<>();
+		if (answers == null) {
+			return ordered;
+		}
+		for (String question : questions) {
+			if (answers.containsKey(question)) {
+				ordered.put(question, answers.get(question));
 			}
 		}
-		return List.copyOf(questions);
+		return ordered;
 	}
 }

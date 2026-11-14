@@ -7,6 +7,7 @@ import static com.moa.backend.dashboard.domain.ApplicationFixture.application;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.moa.backend.application.entity.Application;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -129,6 +130,34 @@ class ApplicationReviewTest {
 				application(3, "박모아", "3", "010-3", CONFIRMED, 20, null)));
 
 		assertThat(review.questions()).containsExactly("뒤풀이 참석 여부", "첫 참여");
+	}
+
+	@Test
+	void 저장된_폼_문항_순서를_먼저_두고_answers에만_있는_문항을_뒤에_붙인다() {
+		Map<String, String> answers = new LinkedHashMap<>();
+		answers.put("추가 문항", "x");
+		answers.put("첫 참여", "예");
+		answers.put("뒤풀이 참석 여부", "참석");
+		ApplicationReview review = ApplicationReview.of(
+				List.of(application(1, "김모아", "1", "010-1", CONFIRMED, 0, answers)),
+				List.of("뒤풀이 참석 여부", "첫 참여", "응답 없는 문항"));
+
+		assertThat(review.questions()).containsExactly("뒤풀이 참석 여부", "첫 참여", "응답 없는 문항", "추가 문항");
+		assertThat(review.orderedAnswers(review.rows().get(0).application()).keySet())
+				.containsExactly("뒤풀이 참석 여부", "첫 참여", "추가 문항");
+	}
+
+	@Test
+	void 폼_문항_순서가_비어_있으면_answers_등장_순서를_따른다() {
+		Map<String, String> answers = new LinkedHashMap<>();
+		answers.put("B", "1");
+		answers.put("A", "2");
+		List<Application> applications = List.of(application(1, "김모아", "1", "010-1", CONFIRMED, 0, answers));
+
+		assertThat(ApplicationReview.of(applications, null).questions()).containsExactly("B", "A");
+		assertThat(ApplicationReview.of(applications, List.of()).questions()).containsExactly("B", "A");
+		assertThat(ApplicationReview.of(applications, List.of()).orderedAnswers(applications.get(0)).keySet())
+				.containsExactly("B", "A");
 	}
 
 	private static List<Long> ids(List<ReviewedApplication> rows) {

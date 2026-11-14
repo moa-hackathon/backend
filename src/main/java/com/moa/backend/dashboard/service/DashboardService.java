@@ -47,8 +47,9 @@ public class DashboardService {
 
 	public ApplicationListResponse getApplications(Club club, Long eventId, ApplicationFilter filter) {
 		Event event = findOwnedEvent(club, eventId);
-		List<ApplicationRowResponse> rows = review(event).filter(filter).stream()
-				.map(ApplicationRowResponse::from)
+		ApplicationReview review = review(event);
+		List<ApplicationRowResponse> rows = review.filter(filter).stream()
+				.map(row -> ApplicationRowResponse.from(row, review))
 				.toList();
 		return new ApplicationListResponse(filter, rows.size(), rows);
 	}
@@ -65,6 +66,7 @@ public class DashboardService {
 	}
 
 	private ApplicationReview review(Event event) {
-		return ApplicationReview.of(applicationRepository.findAllByEventIdOrderByAppliedAtAscIdAsc(event.getId()));
+		return ApplicationReview.of(applicationRepository.findAllByEventIdOrderByAppliedAtAscIdAsc(event.getId()),
+				event.getFormQuestions());
 	}
 }

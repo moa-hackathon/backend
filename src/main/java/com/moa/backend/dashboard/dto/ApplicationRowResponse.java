@@ -2,6 +2,7 @@ package com.moa.backend.dashboard.dto;
 
 import com.moa.backend.application.entity.Application;
 import com.moa.backend.application.entity.ApplicationStatus;
+import com.moa.backend.dashboard.domain.ApplicationReview;
 import com.moa.backend.dashboard.domain.DisplayStatus;
 import com.moa.backend.dashboard.domain.RequiredField;
 import com.moa.backend.dashboard.domain.ReviewedApplication;
@@ -32,14 +33,15 @@ public record ApplicationRowResponse(
 		List<RequiredField> missingFields
 ) {
 
-	public static ApplicationRowResponse from(ReviewedApplication reviewed) {
+	/** answers는 {@link ApplicationReview#questions()}의 문항 순서로 다시 담는다. */
+	public static ApplicationRowResponse from(ReviewedApplication reviewed, ApplicationReview review) {
 		Application application = reviewed.application();
 		return new ApplicationRowResponse(
 				application.getId(),
 				application.getName(),
 				application.getStudentId(),
 				application.getContact(),
-				application.getAnswers() == null ? Map.of() : application.getAnswers(),
+				review.orderedAnswers(application),
 				application.getAppliedAt(),
 				application.getStatus(),
 				reviewed.displayStatus(),
