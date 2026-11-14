@@ -1,0 +1,103 @@
+### MOA 테스트 API 호출 모음 (IntelliJ HTTP Client: 각 요청 왼쪽 ▶ 클릭)
+### 서버: docker compose up -d && ./gradlew bootRun
+
+@host = http://localhost:8080
+
+### ===================== CSV =====================
+
+### CSV 쓰기 (data/csv/test/members.csv 에 저장)
+POST {{host}}/test/csv
+Content-Type: application/json
+
+{
+  "path": "test/members.csv",
+  "headers": ["이름", "이메일", "메모"],
+  "rows": [
+    ["홍길동", "hong@example.com", "쉼표, 포함"],
+    ["김철수", "kim@example.com", "줄바꿈\n포함"]
+  ],
+  "overwrite": true
+}
+
+### CSV 읽기
+GET {{host}}/test/csv?path=test/members.csv
+
+### CSV 경로 조작 → 400
+GET {{host}}/test/csv?path=../secret.csv
+
+### ===================== Discord =====================
+### webhookUrl: 채널 편집 → 연동 → 웹후크 → 웹후크 URL 복사 (토큰 포함, 공유 주의)
+
+### Discord 메시지 보내기
+POST {{host}}/test/discord
+Content-Type: application/json
+
+{
+  "webhookUrl": "https://discord.com/api/webhooks/여기에_ID/여기에_TOKEN",
+  "content": "**MOA 테스트** 메시지입니다.\n@everyone 은 알림이 가지 않습니다."
+}
+
+### ===================== Google 폼 =====================
+### 필요: 환경변수 GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+### 최초 1회: 브라우저에서 http://localhost:8080/oauth/google/authorize 접속 → Google 로그인 → 허용
+
+### Google 계정 연결 시작 (302 → Google 동의 화면. 브라우저로 여는 게 편함)
+GET {{host}}/oauth/google/authorize
+
+### Google 폼 만들기
+POST {{host}}/test/google-form
+Content-Type: application/json
+
+{
+  "title": "MOA 모임 참석 설문",
+  "description": "다음 모임 일정을 정하기 위한 설문입니다.",
+  "questions": [
+    { "type": "SHORT_ANSWER", "title": "이름", "required": true },
+    { "type": "MULTIPLE_CHOICE", "title": "참석 여부", "required": true, "options": ["참석", "불참", "미정"] },
+    { "type": "CHECKBOX", "title": "가능한 요일", "options": ["월", "화", "수", "목", "금"] },
+    { "type": "DROPDOWN", "title": "지역", "options": ["서울", "경기", "기타"] },
+    { "type": "LINEAR_SCALE", "title": "기대감", "scaleLow": 1, "scaleHigh": 5, "scaleLowLabel": "낮음", "scaleHighLabel": "높음" },
+    { "type": "DATE", "title": "선호 날짜" },
+    { "type": "TIME", "title": "선호 시간" },
+    { "type": "PARAGRAPH", "title": "하고 싶은 말", "description": "자유롭게 적어주세요" }
+  ]
+}
+
+### Google 폼 검증 오류 → 400 (보기 없는 객관식)
+POST {{host}}/test/google-form
+Content-Type: application/json
+
+{
+  "title": "잘못된 폼",
+  "questions": [ { "type": "MULTIPLE_CHOICE", "title": "보기 없음" } ]
+}
+
+### ===================== Google 시트 (공개) =====================
+### 시트 공유 설정: '링크가 있는 모든 사용자' → 뷰어. 키 불필요
+### 주의: 쿼리스트링 안에서는 링크의 # 를 %23 으로 바꿔 적어야 탭(gid)이 전달됨 (Swagger 입력칸에는 그대로 붙여넣으면 됨)
+
+### 공개 시트 가져오기 (Google 공식 예제 시트)
+GET {{host}}/test/google-sheet?url=https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit%23gid=0
+
+### ===================== AI (Upstage / Gemini) =====================
+### provider: UPSTAGE(.env UPSTAGE_API_KEY) / GEMINI(.env GEMINI_API_KEY). 생략하면 AI_PROVIDER 기본값
+
+### AI 텍스트 생성 - Upstage
+POST {{host}}/test/ai
+Content-Type: application/json
+
+{
+  "provider": "UPSTAGE",
+  "systemPrompt": "너는 모임 운영을 돕는 비서다. 한국어로 짧게 답한다.",
+  "prompt": "10명 모임 참석 여부를 묻는 설문 질문 3개만 만들어줘."
+}
+
+### AI 텍스트 생성 - Gemini
+POST {{host}}/test/ai
+Content-Type: application/json
+
+{
+  "provider": "GEMINI",
+  "systemPrompt": "너는 모임 운영을 돕는 비서다. 한국어로 짧게 답한다.",
+  "prompt": "10명 모임 참석 여부를 묻는 설문 질문 3개만 만들어줘."
+}
