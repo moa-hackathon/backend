@@ -17,4 +17,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 			+ " group by a.event.id")
 	List<EventApplicantCount> countByEventIdsExcludingStatus(@Param("eventIds") Collection<Long> eventIds,
 			@Param("excludedStatus") ApplicationStatus excludedStatus);
+
+	/** CSV 재업로드 중복 판별용. 행사의 기존 row_hash를 한 번에 가져온다. */
+	@Query("select a.rowHash from Application a where a.event.id = :eventId and a.rowHash is not null")
+	List<String> findRowHashesByEventId(@Param("eventId") Long eventId);
+
+	/** 확정/대기 재계산 순서(신청 시각, id)대로 행사의 모든 신청을 가져온다. */
+	List<Application> findAllByEventIdOrderByAppliedAtAscIdAsc(Long eventId);
 }

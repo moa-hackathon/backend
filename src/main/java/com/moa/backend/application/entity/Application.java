@@ -93,4 +93,9 @@ public class Application extends BaseTimeEntity {
 		this.rowHash = rowHash;
 		this.appliedAt = appliedAt;
 	}
+
+	/** 확정/대기 재계산 결과를 반영한다. */
+	public void changeStatus(ApplicationStatus status) {
+		this.status = status;
+	}
 }
