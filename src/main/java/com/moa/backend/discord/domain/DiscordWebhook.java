@@ -39,6 +39,14 @@ public record DiscordWebhook(String id, String token) {
         return new DiscordWebhook(matcher.group(1), matcher.group(2));
     }
 
+    /**
+     * 저장용 정규화 URL. 입력이 discordapp.com, ptb/canary, /v10, 쿼리 등 어떤 변형이어도
+     * https://discord.com/api/webhooks/{id}/{token} 하나로 맞춘다. 토큰이 들어 있으므로 응답·로그에 쓰지 않는다.
+     */
+    public String canonicalUrl() {
+        return "https://discord.com/api/webhooks/" + id + "/" + token;
+    }
+
     /** 로그에 토큰이 찍히지 않도록 가린다. */
     @Override
     public String toString() {

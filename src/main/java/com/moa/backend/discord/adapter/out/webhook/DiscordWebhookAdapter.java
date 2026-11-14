@@ -3,6 +3,7 @@ package com.moa.backend.discord.adapter.out.webhook;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.moa.backend.discord.application.port.out.DiscordMessagePort;
+import com.moa.backend.discord.application.port.out.DiscordWebhookLookupPort;
 import com.moa.backend.discord.domain.DiscordMessage;
 import com.moa.backend.discord.domain.DiscordWebhook;
 import java.net.URI;
@@ -23,7 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * 오류 메시지에는 Webhook URL(토큰 포함)을 절대 넣지 않는다.
  */
 @Component
-public class DiscordWebhookAdapter implements DiscordMessagePort {
+public class DiscordWebhookAdapter implements DiscordMessagePort, DiscordWebhookLookupPort {
 
     static final String WEBHOOK_BASE_URL = "https://discord.com/api/webhooks";
 
@@ -54,6 +55,35 @@ public class DiscordWebhookAdapter implements DiscordMessagePort {
             throw failure(e);
         } catch (RestClientException e) {
             throw new IllegalStateException("Discord Webhook 호출에 실패했습니다: " + e.getClass().getSimpleName(), e);
+        }
+    }
+
+    /**
+     * GET /webhooks/{id}/{token}으로 Webhook이 있는지 확인한다. 응답 본문에 토큰이 들어 있으므로 읽지 않는다.
+     * Discord는 없는 id에 404, 틀린 토큰에 401을 준다.
+     * RestClient 예외 메시지에는 호출 URL(토큰 포함)이 들어갈 수 있어 원인 예외를 붙이지 않는다.
+     */
+    @Override
+    public boolean exists(DiscordWebhook webhook) {
+        URI uri = UriComponentsBuilder.fromUriString(WEBHOOK_BASE_URL)
+                .pathSegment(webhook.id(), webhook.token())
+                .build()
+                .encode()
+                .toUri();
+        try {
+            restClient.get()
+                    .uri(uri)
+                    .retrieve()
+                    .toBodilessEntity();
+            return true;
+        } catch (HttpClientErrorException.NotFound | HttpClientErrorException.Unauthorized
+                 | HttpClientErrorException.Forbidden e) {
+            return false;
+        } catch (RestClientResponseException e) {
+            throw new IllegalStateException(
+                    "Discord Webhook 조회에 실패했습니다 (HTTP %d).".formatted(e.getStatusCode().value()));
+        } catch (RestClientException e) {
+            throw new IllegalStateException("Discord Webhook 조회에 실패했습니다: " + e.getClass().getSimpleName());
         }
     }
 
