@@ -1,0 +1,11 @@
+.git
+.gradle
+.idea
+build
+data
+http
+.env
+.env.*
+*.swp
+*.iml
+docker-compose.yml

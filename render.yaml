@@ -1,0 +1,78 @@
+# Render Blueprint. 대시보드 → New → Blueprint 에서 이 저장소를 연결하면 아래 리소스가 만들어진다.
+# sync: false 인 값은 처음 만들 때 대시보드에서 직접 입력한다(저장소에는 비밀값을 두지 않는다).
+
+databases:
+  # Render 관리형 Postgres(무료 플랜은 생성 후 30일이 지나면 만료됨). 로컬 개발은 docker-compose의 Postgres 16을 쓴다.
+  - name: moa-db
+    plan: free
+    region: singapore
+    databaseName: moa
+    user: moa
+    postgresMajorVersion: "16"
+
+services:
+  - type: web
+    name: moa-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: singapore
+    plan: free
+    branch: main
+    # main에 커밋이 올라오면 자동 배포
+    autoDeployTrigger: commit
+    healthCheckPath: /actuator/health
+    envVars:
+      # ---------- DB (Render Postgres) ----------
+      # application-render.yml 프로필로 Postgres에 붙는다.
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: DB_HOST
+        fromDatabase:
+          name: moa-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: moa-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: moa-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: moa-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: moa-db
+          property: password
+
+      # ---------- Google 폼 (OAuth) ----------
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # OAuth 클라이언트의 "승인된 리디렉션 URI"에 똑같이 등록해야 함
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      # 프록시 뒤라서 원격 요청 허용 여부. 켜면 누구나 /oauth/google/** 에 접근 가능하니 기본은 false
+      - key: GOOGLE_OAUTH_ALLOW_REMOTE
+        value: "false"
+
+      # ---------- AI ----------
+      # 요청에 provider를 안 주면 쓸 기본 제공자: upstage / gemini
+      - key: AI_PROVIDER
+        value: upstage
+      - key: UPSTAGE_API_KEY
+        sync: false
+      - key: UPSTAGE_MODEL
+        value: solar-pro4
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+
+      # ---------- 테스트 API ----------
+      # /test/** 엔드포인트는 운영에서 끈다
+      - key: TEST_API_ENABLED
+        value: "false"

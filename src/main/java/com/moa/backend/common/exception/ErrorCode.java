@@ -18,6 +18,9 @@ public enum ErrorCode {
 	FORM_LINK_INVALID(HttpStatus.BAD_REQUEST, "구글폼 링크를 확인할 수 없습니다."),
 	NOTICE_NOT_READY(HttpStatus.CONFLICT, "공지가 아직 준비되지 않았습니다."),
 	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "요청이 올바르지 않습니다."),
+	CSV_EMPTY(HttpStatus.BAD_REQUEST, "빈 파일입니다."),
+	CSV_UNREADABLE(HttpStatus.BAD_REQUEST, "CSV 파일을 읽을 수 없습니다."),
+	CSV_COLUMN_MISSING(HttpStatus.BAD_REQUEST, "CSV에서 필요한 열을 찾을 수 없습니다."),
 	INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
 
 	private final HttpStatus status;
