@@ -20,6 +20,7 @@ import com.moa.backend.common.exception.ErrorCode;
 import com.moa.backend.dashboard.domain.AnswerStat;
 import com.moa.backend.dashboard.domain.ApplicationFilter;
 import com.moa.backend.dashboard.domain.DisplayStatus;
+import com.moa.backend.dashboard.domain.Banner;
 import com.moa.backend.dashboard.domain.NextAction;
 import com.moa.backend.dashboard.domain.RequiredField;
 import com.moa.backend.dashboard.dto.ApplicationListResponse;
@@ -70,6 +71,7 @@ class DashboardControllerTest {
 		DashboardResponse response = new DashboardResponse(
 				new EventSummaryResponse(10L, "모아 네트워킹 행사", LocalDateTime.of(2026, 11, 21, 19, 0), "공학관 302호", NOW),
 				progress,
+				Banner.from(progress),
 				NextAction.from(progress),
 				List.of(new AnswerStat("뒤풀이 참석 여부", 34,
 						List.of(new AnswerStat.Option("참석", 22, 65), new AnswerStat.Option("불참", 12, 35)))),
@@ -80,6 +82,8 @@ class DashboardControllerTest {
 		mockMvc.perform(get("/api/events/10/dashboard").header("X-Invite-Code", INVITE_CODE))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.event.title").value("모아 네트워킹 행사"))
+				.andExpect(jsonPath("$.banner.title").value("진행 가능 · 정원 임박"))
+				.andExpect(jsonPath("$.banner.message").value("최소 인원은 넘었고, 정원까지 6명 남았어요."))
 				.andExpect(jsonPath("$.event.lastSyncedAt").value("2026-11-14T12:40:00"))
 				.andExpect(jsonPath("$.progress.applicantCount").value(34))
 				.andExpect(jsonPath("$.progress.status").value("NEAR_CAPACITY"))
@@ -116,7 +120,7 @@ class DashboardControllerTest {
 				Map.of("뒤풀이 참석 여부", "참석"), LocalDateTime.of(2026, 11, 14, 11, 20), ApplicationStatus.WAITING,
 				DisplayStatus.DUPLICATE, "중복", true, List.of());
 		given(dashboardService.getApplications(club, 10L, ApplicationFilter.NEEDS_CHECK))
-				.willReturn(new ApplicationListResponse(ApplicationFilter.NEEDS_CHECK, 1, List.of(row)));
+				.willReturn(new ApplicationListResponse(ApplicationFilter.NEEDS_CHECK, 1, 34, List.of(row)));
 
 		mockMvc.perform(get("/api/events/10/applications").param("filter", "NEEDS_CHECK")
 						.header("X-Invite-Code", INVITE_CODE))
@@ -132,7 +136,7 @@ class DashboardControllerTest {
 	@Test
 	void 필터를_생략하면_전체를_조회한다() throws Exception {
 		given(dashboardService.getApplications(club, 10L, ApplicationFilter.ALL))
-				.willReturn(new ApplicationListResponse(ApplicationFilter.ALL, 0, List.of()));
+				.willReturn(new ApplicationListResponse(ApplicationFilter.ALL, 0, 0, List.of()));
 
 		mockMvc.perform(get("/api/events/10/applications").header("X-Invite-Code", INVITE_CODE))
 				.andExpect(status().isOk())

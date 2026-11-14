@@ -7,6 +7,7 @@ import com.moa.backend.common.exception.ErrorCode;
 import com.moa.backend.dashboard.domain.AnswerAggregator;
 import com.moa.backend.dashboard.domain.ApplicationFilter;
 import com.moa.backend.dashboard.domain.ApplicationReview;
+import com.moa.backend.dashboard.domain.Banner;
 import com.moa.backend.dashboard.domain.NextAction;
 import com.moa.backend.dashboard.dto.ApplicationListResponse;
 import com.moa.backend.dashboard.dto.ApplicationRowResponse;
@@ -40,6 +41,7 @@ public class DashboardService {
 		return new DashboardResponse(
 				EventSummaryResponse.from(event),
 				progress,
+				Banner.from(progress),
 				NextAction.from(progress),
 				AnswerAggregator.aggregate(review),
 				CheckSummaryResponse.from(review));
@@ -51,7 +53,7 @@ public class DashboardService {
 		List<ApplicationRowResponse> rows = review.filter(filter).stream()
 				.map(row -> ApplicationRowResponse.from(row, review))
 				.toList();
-		return new ApplicationListResponse(filter, rows.size(), rows);
+		return new ApplicationListResponse(filter, rows.size(), review.applicantCount(), rows);
 	}
 
 	public ExcelDownload exportApplications(Club club, Long eventId) {

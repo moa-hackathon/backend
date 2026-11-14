@@ -10,10 +10,11 @@ import java.util.Map;
  * 조건별 응답 집계(F8). 취소되지 않은 신청의 {@code answers}를 문항별·값별로 센다.
  *
  * <p>객관식처럼 보이는 문항만 집계한다. 서술형 문항이 섞이면 값 종류가 응답 수만큼 늘어나므로
- * 아래 두 조건을 모두 만족하는 문항만 남긴다.
+ * 아래 조건을 모두 만족하는 문항만 남긴다.
  * <ul>
  *   <li>서로 다른 값이 {@value #MAX_DISTINCT_VALUES}개 이하</li>
  *   <li>가장 긴 값이 {@value #MAX_VALUE_LENGTH}자 이하</li>
+ *   <li>두 명 이상이 고른 값이 하나라도 있음 (응답이 적을 때 짧은 서술형 답이 섞이는 것을 막는다)</li>
  * </ul>
  * 값은 앞뒤 공백을 떼고 비교하며, 빈 값은 응답하지 않은 것으로 본다.
  */
@@ -51,7 +52,8 @@ public final class AnswerAggregator {
 	private static boolean isChoiceLike(Map<String, Integer> counts) {
 		return !counts.isEmpty()
 				&& counts.size() <= MAX_DISTINCT_VALUES
-				&& counts.keySet().stream().allMatch(value -> value.length() <= MAX_VALUE_LENGTH);
+				&& counts.keySet().stream().allMatch(value -> value.length() <= MAX_VALUE_LENGTH)
+				&& counts.values().stream().anyMatch(count -> count >= 2);
 	}
 
 	private static List<AnswerStat.Option> toOptions(Map<String, Integer> counts, int applicantCount) {
