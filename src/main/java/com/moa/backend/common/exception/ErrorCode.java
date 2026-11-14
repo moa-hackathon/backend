@@ -11,6 +11,7 @@ public enum ErrorCode {
 	INVITE_CODE_REQUIRED(HttpStatus.UNAUTHORIZED, "초대 코드가 필요합니다."),
 	INVITE_CODE_INVALID(HttpStatus.UNAUTHORIZED, "유효하지 않은 초대 코드입니다."),
 	EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "행사를 찾을 수 없습니다."),
+	APPLICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "신청을 찾을 수 없습니다."),
 	DISCORD_WEBHOOK_INVALID(HttpStatus.BAD_REQUEST, "디스코드 웹훅 URL이 올바르지 않습니다."),
 	DISCORD_NOT_CONNECTED(HttpStatus.CONFLICT, "디스코드가 연결되지 않았습니다."),
 	DISCORD_SEND_FAILED(HttpStatus.BAD_GATEWAY, "디스코드 발송에 실패했습니다."),
