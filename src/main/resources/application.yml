@@ -5,7 +5,7 @@ spring:
     # 프로젝트 루트의 .env(KEY=VALUE)를 설정으로 읽는다. 없으면 무시.
     import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:mysql://localhost:3306/moa
+    url: jdbc:postgresql://localhost:5432/moa
     username: moa
     password: moa
   jpa:
