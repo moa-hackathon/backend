@@ -25,6 +25,9 @@ server:
   port: ${PORT:8080}
 
 moa:
+  cors:
+    # 브라우저 요청을 허용할 프론트 origin (쉼표 구분, 끝에 / 없이)
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://moa-three-phi.vercel.app}
   csv:
     base-dir: ${CSV_BASE_DIR:./data/csv}
   google:
