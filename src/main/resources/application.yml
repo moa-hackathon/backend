@@ -1,9 +1,40 @@
 spring:
   application:
     name: backend
+  config:
+    # 프로젝트 루트의 .env(KEY=VALUE)를 설정으로 읽는다. 없으면 무시.
+    import: optional:file:.env[.properties]
   datasource:
     url: jdbc:mysql://localhost:3306/moa
     username: moa
     password: moa
   jpa:
     open-in-view: false
+  ai:
+    mcp:
+      server:
+        name: moa-mcp
+        version: 0.0.1
+        type: SYNC
+        protocol: STREAMABLE
+
+moa:
+  csv:
+    base-dir: ${CSV_BASE_DIR:./data/csv}
+  google:
+    oauth:
+      client-id: ${GOOGLE_CLIENT_ID:}
+      client-secret: ${GOOGLE_CLIENT_SECRET:}
+      redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/oauth/google/callback}
+    credential:
+      file: ${GOOGLE_CREDENTIAL_FILE:./data/google/credential.json}
+  ai:
+    default-provider: ${AI_PROVIDER:upstage}
+    upstage:
+      api-key: ${UPSTAGE_API_KEY:}
+      model: ${UPSTAGE_MODEL:solar-pro4}
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:gemini-3.6-flash}
+  test-api:
+    enabled: ${TEST_API_ENABLED:true}
