@@ -1,12 +1,16 @@
 package com.moa.backend.event.entity;
 
+import com.moa.backend.club.entity.Club;
 import com.moa.backend.common.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -28,8 +32,9 @@ public class Event extends BaseTimeEntity {
 	@Column(name = "id")
 	private Long id;
 
-	@Column(name = "club_id", nullable = false)
-	private Long clubId;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "club_id", nullable = false)
+	private Club club;
 
 	@Column(name = "title", nullable = false, length = 100)
 	private String title;
@@ -66,7 +71,7 @@ public class Event extends BaseTimeEntity {
 
 	@Builder
 	private Event(
-		Long clubId,
+		Club club,
 		String title,
 		String description,
 		String location,
@@ -79,7 +84,7 @@ public class Event extends BaseTimeEntity {
 		String sheetGid,
 		LocalDateTime lastSyncedAt
 	) {
-		this.clubId = clubId;
+		this.club = club;
 		this.title = title;
 		this.description = description;
 		this.location = location;

@@ -1,14 +1,18 @@
 package com.moa.backend.application.entity;
 
 import com.moa.backend.common.entity.BaseTimeEntity;
+import com.moa.backend.event.entity.Event;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
@@ -34,8 +38,9 @@ public class Application extends BaseTimeEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "event_id", nullable = false)
-	private Long eventId;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "event_id", nullable = false)
+	private Event event;
 
 	@Column(name = "name", nullable = false, length = 50)
 	private String name;
@@ -66,7 +71,7 @@ public class Application extends BaseTimeEntity {
 
 	@Builder
 	private Application(
-		Long eventId,
+		Event event,
 		String name,
 		String studentId,
 		String contact,
@@ -76,7 +81,7 @@ public class Application extends BaseTimeEntity {
 		String rowHash,
 		LocalDateTime appliedAt
 	) {
-		this.eventId = eventId;
+		this.event = event;
 		this.name = name;
 		this.studentId = studentId;
 		this.contact = contact;
