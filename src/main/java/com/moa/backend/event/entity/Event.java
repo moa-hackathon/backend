@@ -60,12 +60,6 @@ public class Event extends BaseTimeEntity {
 	@Column(name = "share_code", nullable = false, unique = true, length = 32)
 	private String shareCode;
 
-	@Column(name = "sheet_id", length = 100)
-	private String sheetId;
-
-	@Column(name = "sheet_gid", length = 20)
-	private String sheetGid;
-
 	@Column(name = "last_synced_at")
 	private LocalDateTime lastSyncedAt;
 
@@ -80,8 +74,6 @@ public class Event extends BaseTimeEntity {
 		int minCapacity,
 		LocalDateTime applyDeadline,
 		String shareCode,
-		String sheetId,
-		String sheetGid,
 		LocalDateTime lastSyncedAt
 	) {
 		this.club = club;
@@ -93,8 +85,6 @@ public class Event extends BaseTimeEntity {
 		this.minCapacity = minCapacity;
 		this.applyDeadline = applyDeadline;
 		this.shareCode = shareCode;
-		this.sheetId = sheetId;
-		this.sheetGid = sheetGid;
 		this.lastSyncedAt = lastSyncedAt;
 	}
 }
