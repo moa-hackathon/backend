@@ -5,9 +5,9 @@ spring:
     # 프로젝트 루트의 .env(KEY=VALUE)를 설정으로 읽는다. 없으면 무시.
     import: optional:file:.env[.properties]
   datasource:
-    url: jdbc:postgresql://localhost:5432/moa
-    username: moa
-    password: moa
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/moa}
+    username: ${DB_USERNAME:moa}
+    password: ${DB_PASSWORD:moa}
   jpa:
     open-in-view: false
     hibernate:
@@ -20,6 +20,10 @@ spring:
         type: SYNC
         protocol: STREAMABLE
 
+server:
+  # Render 등 PaaS는 PORT 환경변수로 포트를 지정한다.
+  port: ${PORT:8080}
+
 moa:
   csv:
     base-dir: ${CSV_BASE_DIR:./data/csv}
@@ -28,6 +32,9 @@ moa:
       client-id: ${GOOGLE_CLIENT_ID:}
       client-secret: ${GOOGLE_CLIENT_SECRET:}
       redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/oauth/google/callback}
+    oauth-web:
+      # 프록시 뒤(Render)에서는 요청이 localhost로 보이지 않으므로, 원격 연결이 필요할 때만 true로 켠다.
+      allow-remote: ${GOOGLE_OAUTH_ALLOW_REMOTE:false}
     credential:
       file: ${GOOGLE_CREDENTIAL_FILE:./data/google/credential.json}
   ai:

@@ -1,0 +1,10 @@
+# Render 배포용 프로필(SPRING_PROFILES_ACTIVE=render). 로컬은 기본 application.yml(DB_URL, localhost Postgres)을 쓴다.
+spring:
+  datasource:
+    # Render가 주는 connectionString(postgresql://user:pass@host/db)은 JDBC 형식이 아니라서 조각으로 조립한다.
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      # 무료 플랜(메모리 512MB, DB 연결 수 제한)에 맞춰 커넥션 풀을 작게 유지한다.
+      maximum-pool-size: 5
