@@ -108,9 +108,17 @@ class FormCsvParserTest {
 	}
 
 	@Test
+	void 문항은_고정_컬럼을_뺀_answers_키를_헤더_순서로_돌려준다() {
+		ParsedFormCsv parsed = FormCsvParser.parse("메모,타임스탬프,이름,,뒤풀이,학번,메모\n");
+
+		assertThat(parsed.questions()).containsExactly("메모", "열 4", "뒤풀이", "메모 (2)");
+	}
+
+	@Test
 	void 헤더만_있으면_0건이다() {
 		ParsedFormCsv parsed = FormCsvParser.parse(HEADER);
 
+		assertThat(parsed.questions()).containsExactly("뒤풀이 참석 여부", "하고 싶은 말");
 		assertThat(parsed.totalRows()).isZero();
 		assertThat(parsed.rows()).isEmpty();
 		assertThat(parsed.errors()).isEmpty();

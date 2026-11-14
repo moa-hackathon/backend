@@ -54,7 +54,8 @@ public final class FormCsvParser {
 				errors.add(new CsvRowError(rowNumber, e.getMessage()));
 			}
 		}
-		return new ParsedFormCsv(dataRecords.size(), Collections.unmodifiableList(rows),
+		return new ParsedFormCsv(List.copyOf(columns.answerKeys().values()), dataRecords.size(),
+				Collections.unmodifiableList(rows),
 				Collections.unmodifiableList(errors));
 	}
 

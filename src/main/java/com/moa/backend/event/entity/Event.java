@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -99,5 +100,10 @@ public class Event extends BaseTimeEntity {
 	/** 구글폼 응답 CSV를 적재한 시각을 남긴다. */
 	public void markSynced(LocalDateTime syncedAt) {
 		this.lastSyncedAt = syncedAt;
+	}
+
+	/** 최근 업로드한 CSV의 문항(answers 키) 순서로 덮어쓴다. */
+	public void updateFormQuestions(List<String> formQuestions) {
+		this.formQuestions = new ArrayList<>(formQuestions);
 	}
 }

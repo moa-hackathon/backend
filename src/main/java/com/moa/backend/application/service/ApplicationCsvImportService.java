@@ -59,6 +59,7 @@ public class ApplicationCsvImportService {
 
 		LocalDateTime syncedAt = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
 		event.markSynced(syncedAt);
+		event.updateFormQuestions(parsed.questions());
 
 		List<CsvRowFailureResponse> failures = parsed.errors().stream()
 				.map(CsvRowFailureResponse::from)

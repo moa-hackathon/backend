@@ -211,6 +211,18 @@ class ApplicationCsvImportServiceTest {
 		assertThat(response.totalRows()).isZero();
 		assertThat(response.insertedCount()).isZero();
 		assertThat(event.getLastSyncedAt()).isNotNull();
+		assertThat(event.getFormQuestions()).containsExactly("뒤풀이 참석 여부");
+	}
+
+	@Test
+	void 문항_순서를_최신_파일_기준으로_덮어쓴다() {
+		givenEventAndStore();
+		service.importCsv(club, EVENT_ID, bytes(HEADER + ROW_A));
+		assertThat(event.getFormQuestions()).containsExactly("뒤풀이 참석 여부");
+
+		service.importCsv(club, EVENT_ID, bytes("타임스탬프,하고 싶은 말,이름,뒤풀이 참석 여부,,하고 싶은 말\n"));
+
+		assertThat(event.getFormQuestions()).containsExactly("하고 싶은 말", "뒤풀이 참석 여부", "열 5", "하고 싶은 말 (2)");
 	}
 
 	@Test
@@ -231,6 +243,7 @@ class ApplicationCsvImportServiceTest {
 				.isInstanceOf(ApiException.class)
 				.extracting("errorCode").isEqualTo(ErrorCode.CSV_COLUMN_MISSING);
 		assertThat(event.getLastSyncedAt()).isNull();
+		assertThat(event.getFormQuestions()).isNull();
 		verify(applicationRepository, never()).saveAll(org.mockito.ArgumentMatchers.anyList());
 	}
 
