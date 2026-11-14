@@ -95,4 +95,9 @@ public class Event extends BaseTimeEntity {
 		this.shareCode = shareCode;
 		this.lastSyncedAt = lastSyncedAt;
 	}
+
+	/** 구글폼 응답 CSV를 적재한 시각을 남긴다. */
+	public void markSynced(LocalDateTime syncedAt) {
+		this.lastSyncedAt = syncedAt;
+	}
 }
